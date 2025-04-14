@@ -44,7 +44,7 @@
   </style>
 </head>
 <body>
-  <h2>Müzik Yükleme Formu</h2>
+  <h2>Kuduko Müzik Yapım Müzik Yükle</h2>
 
   <form id="musicForm" enctype="multipart/form-data">
     <label for="music">🎵 Müzik Dosyası:</label>
