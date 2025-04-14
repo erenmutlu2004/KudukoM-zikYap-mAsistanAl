@@ -1,0 +1,10 @@
+<pre><code>muzik-oto-youtube-upload/
+├── public/
+│   └── index.html
+├── uploads/
+├── server.js
+├── .env
+├── client_secrets.json
+├── package.json
+└── README.md
+</code></pre>

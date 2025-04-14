@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Müzik Gönder - YouTube'a Yükle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    h2 {
+      color: #444;
+    }
+    label {
+      font-weight: bold;
+    }
+    textarea, input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 15px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Müzik Yükleme Formu</h2>
+
+  <form id="musicForm" enctype="multipart/form-data">
+    <label for="music">🎵 Müzik Dosyası:</label>
+    <input type="file" id="music" name="music" accept="audio/*" required>
+
+    <label for="title">🎤 Başlık:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="description">📝 Açıklama:</label>
+    <textarea id="description" name="description" required></textarea>
+
+    <button type="submit">Gönder ve YouTube'a Yükle</button>
+  </form>
+<script>
+    document.getElementById('musicForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append('music', document.getElementById('music').files[0]);
+      formData.append('title', document.getElementById('title').value);
+      formData.append('description', document.getElementById('description').value);
+
+      document.getElementById('status').innerText = "Gönderiliyor...";
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.text();
+        document.getElementById('status').innerText = result;
+      } catch (error) {
+        document.getElementById('status').innerText = "Hata: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

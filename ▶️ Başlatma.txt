@@ -1,0 +1,2 @@
+<pre><code>node server.js
+# Tarayıcıda: http://localhost:3000</code></pre>
