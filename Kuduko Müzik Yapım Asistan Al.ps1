@@ -1,4 +1,4 @@
-﻿while ($true) {
+while ($true) {
     $komut = Read-Host "Komutunuzu yazın"
 
     switch ($komut.ToLower()) {
@@ -61,86 +61,84 @@ $metin | Out-File $dosyaYolu
 # Dosyayı Not Defteri'nde açın
 Start-Process "notepad.exe" $dosyaYolu
  }
-	"arama motoru asistanı aç"  { Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
+	"arama motoru asistanı aç"  { Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase,System.Windows.Forms
 
-# Form oluştur
-$form = New-Object Windows.Forms.Form
-$form.Text = "Arama Motoru Asistanı"
-$form.Size = New-Object Drawing.Size(400,300)
+# WebBrowser için gerekli COM tipi
+Add-Type -AssemblyName System.Windows.Forms
+
+# Ana form oluştur
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Kuduko Müzik Yapım Tarayıcı"
+$form.Width = 1024
+$form.Height = 720
+$form.BackColor = "LightGray"
+$form.FormBorderStyle = "FixedDialog"
+$form.ControlBox = $false
 $form.StartPosition = "CenterScreen"
 
-# Etiket
-$label = New-Object Windows.Forms.Label
-$label.Text = "Aranacak Kelime:"
-$label.Location = New-Object Drawing.Point(10,20)
-$label.Size = New-Object Drawing.Size(120,20)
-$form.Controls.Add($label)
+# Bağlantı girme alanı
+$linkBox = New-Object System.Windows.Forms.TextBox
+$linkBox.Text = "https://kudukomuzikyapim.blogspot.com"
+$linkBox.Location = New-Object System.Drawing.Point(390,7)
+$linkBox.Width = 500
+$form.Controls.Add($linkBox)
 
-# Arama kutusu
-$textBox = New-Object Windows.Forms.TextBox
-$textBox.Location = New-Object Drawing.Point(130,20)
-$textBox.Size = New-Object Drawing.Size(240,20)
-$form.Controls.Add($textBox)
-
-# Gizli mod kutusu
-$checkBox = New-Object Windows.Forms.CheckBox
-$checkBox.Text = "Gizli modda aç"
-$checkBox.Location = New-Object Drawing.Point(130,50)
-$form.Controls.Add($checkBox)
-
-# Arama motorları için fonksiyonlar
-function AramaMotoru {
-    param($motor)
-
-    $kelime = $textBox.Text
-    if ($kelime -eq "") {
-        [System.Windows.Forms.MessageBox]::Show("Lütfen bir kelime girin.")
-        return
+# Git butonu
+$btnGo = New-Object System.Windows.Forms.Button
+$btnGo.Text = "Git"
+$btnGo.Location = New-Object System.Drawing.Point(900,7)
+$btnGo.Add_Click({
+    $url = $linkBox.Text
+    if ($url -ne "") {
+        try {
+            $webBrowser.Navigate($url)
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Geçersiz bağlantı!", "Hata")
+        }
     }
+})
+$form.Controls.Add($btnGo)
 
-    # URL oluştur
-    switch ($motor) {
-        "Google" { $url = "https://www.google.com/search?q=$kelime" }
-        "Bing" { $url = "https://www.bing.com/search?q=$kelime" }
-        "DuckDuckGo" { $url = "https://duckduckgo.com/?q=$kelime" }
-    }
+# Geri tuşu
+$btnBack = New-Object System.Windows.Forms.Button
+$btnBack.Text = "← Geri"
+$btnBack.Location = New-Object System.Drawing.Point(310, 7)
+$btnBack.Add_Click({
+    if ($webBrowser.CanGoBack) { $webBrowser.GoBack() }
+})
+$form.Controls.Add($btnBack)
 
-    # Arama geçmişine kaydet
-    $tarih = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    Add-Content -Path "arama_gecmisi.txt" -Value "$tarih - [$motor] $kelime"
 
-    # Gizli mod kontrolü
-    if ($checkBox.Checked) {
-        Start-Process "msedge.exe" -ArgumentList "--inprivate", $url
-    } else {
-        Start-Process $url
-    }
+# Sekme butonları
+$tabUrls = @{
+"Ana Sayfa" = "https://kudukomuzikyapim.blogspot.com"
+
 }
 
-# Butonlar
-$googleButton = New-Object Windows.Forms.Button
-$googleButton.Text = "Google"
-$googleButton.Location = New-Object Drawing.Point(40,100)
-$googleButton.Add_Click({ AramaMotoru "Google" })
-$form.Controls.Add($googleButton)
+$offset = 10
+foreach ($tab in $tabUrls.Keys) {
+    $btn = New-Object System.Windows.Forms.Button
+    $btn.Text = $tab
+    $btn.Location = New-Object System.Drawing.Point($offset,40)
+    $btn.Width = 80
+    $btn.Add_Click({ $webBrowser.Navigate($tabUrls[$btn.Text]) })
+    $form.Controls.Add($btn)
+    $offset += 90
+}
 
-$bingButton = New-Object Windows.Forms.Button
-$bingButton.Text = "Bing"
-$bingButton.Location = New-Object Drawing.Point(150,100)
-$bingButton.Add_Click({ AramaMotoru "Bing" })
-$form.Controls.Add($bingButton)
+# WebBrowser oluştur (script hatası bastırılmış)
+$webBrowser = New-Object System.Windows.Forms.WebBrowser
+$webBrowser.ScriptErrorsSuppressed = $true
+$webBrowser.Location = New-Object System.Drawing.Point(10,75)
+$webBrowser.Size = New-Object System.Drawing.Size(985, 580)
+$webBrowser.Navigate($linkBox.Text)
+$form.Controls.Add($webBrowser)
 
-$duckButton = New-Object Windows.Forms.Button
-$duckButton.Text = "DuckDuckGo"
-$duckButton.Location = New-Object Drawing.Point(260,100)
-$duckButton.Add_Click({ AramaMotoru "DuckDuckGo" })
-$form.Controls.Add($duckButton)
-
-# Formu çalıştır
+# Formu göster
 $form.Topmost = $true
+$form.Add_Shown({$form.Activate()})
 [void]$form.ShowDialog()
- }
+}
 																	"uygulama güncelleme aç"         { winget upgrade --all --accept-package-agreements --accept-source-agreements}
 																		"windows hakkında aç"         { Start-Process "ms-settings:about" }
 																	"youtube aç"         { Start-Process "https://www.youtube.com" }
